@@ -311,31 +311,25 @@
               indexContent = 0;
             }
 
-         
+            var start = 0;
+            var end = 0;
 
-            var start = indexContent < 11 ? 0 : postContent.lastIndexOf(" ", indexContent - 10);
-            if (start === -1) start = 0; // If no space is found, start from 0
+            start = indexContent < 11 ? 0 : indexContent - 10;
+            end = start === 0 ? 70 : indexContent + keyword.length + 60;
 
-            var end = start === 0 ? 70 : indexContent + keyword.length + 60;
-
-            // Ensure the cutoff happens at a full word boundary
             if (postContent && end > postContent.length) {
               end = postContent.length;
-            } else {
-              while (end < postContent.length && /\S/.test(postContent.charAt(end))) {
-                end++;
-              }
             }
-
 
             var matchContent =
               handlePostContent &&
-              
+              "..." +
                 handlePostContent
                   .substring(start, end)
                   .replace(regEx, function (word) {
                     return '<em class="search-keyword">' + word + "</em>";
-                  });
+                  }) +
+                "...";
 
             resultStr += matchContent;
           }
@@ -475,13 +469,12 @@
     var html = "";
     matchs.forEach(function (post) {
       html +=
-        '<div class="matching-post">\n<a href="' +
-        post.url +
-        '">\n<h2>' +
-        post.title +
-        "</h2>\n<p>" +
-        post.content +
-        "</p>\n</a>\n</div>";
+      '<div class="matching-post">' +
+      '<a href="' + post.url + '"><h2>' + post.title + '</h2></a>' +      
+      "<p>" + post.content + "</p>" +
+      '<p><small><a href="' + post.url + '">' + post.url + '</a></small></p>' +
+      "</div>";
+
     });
 
     $panel.classList.add("show");
