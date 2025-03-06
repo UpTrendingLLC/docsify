@@ -19,6 +19,8 @@
    *
    * @return {object}  The original string and parsed object, { str, config }.
    */
+  
+
   function getAndRemoveConfig(str) {
     if (str === void 0) str = "";
 
@@ -283,69 +285,60 @@
         return;
       }
 
-      if (postTitle) {
-        keywords.forEach(function (keyword) {
-          // From https://github.com/sindresorhus/escape-string-regexp
-          var regEx = new RegExp(
-            escapeHtml(ignoreDiacriticalMarks(keyword)).replace(
-              /[|\\{}()[\]^$+*?.]/g,
-              "\\$&"
-            ),
-            "gi"
-          );
-          var indexTitle = -1;
-          var indexContent = -1;
-          handlePostTitle = postTitle
-            ? escapeHtml(ignoreDiacriticalMarks(postTitle))
-            : postTitle;
-          handlePostContent = postContent
-            ? escapeHtml(ignoreDiacriticalMarks(postContent))
-            : postContent;
+if (postTitle) {
+  keywords.forEach(function (keyword) {
+    var regEx = new RegExp(
+      escapeHtml(ignoreDiacriticalMarks(keyword)).replace(
+        /[|\\{}()[\]^$+*?.]/g,
+        "\\$&"
+      ),
+      "gi"
+    );
 
-          indexTitle = postTitle ? handlePostTitle.search(regEx) : -1;
-          indexContent = postContent ? handlePostContent.search(regEx) : -1;
+    handlePostTitle = postTitle
+      ? escapeHtml(ignoreDiacriticalMarks(postTitle)).replace(regEx, function (word) {
+          return '<em class="search-keyword">' + word + "</em>";
+        })
+      : postTitle;
 
-          if (indexTitle >= 0 || indexContent >= 0) {
-            matchesScore += indexTitle >= 0 ? 3 : indexContent >= 0 ? 2 : 0;
-            if (indexContent < 0) {
-              indexContent = 0;
-            }
+    handlePostContent = postContent
+      ? escapeHtml(ignoreDiacriticalMarks(postContent)).replace(regEx, function (word) {
+          return '<em class="search-keyword">' + word + "</em>";
+        })
+      : postContent;
 
-            var start = 0;
-            var end = 0;
+    var indexTitle = postTitle ? handlePostTitle.search(regEx) : -1;
+    var indexContent = postContent ? handlePostContent.search(regEx) : -1;
 
-            start = indexContent < 11 ? 0 : indexContent - 10;
-            end = start === 0 ? 70 : indexContent + keyword.length + 60;
+    if (indexTitle >= 0 || indexContent >= 0) {
+      matchesScore += indexTitle >= 0 ? 3 : indexContent >= 0 ? 2 : 0;
 
-            if (postContent && end > postContent.length) {
-              end = postContent.length;
-            }
+      var start = indexContent < 31 ? 0 : postContent.lastIndexOf(" ", indexContent - 30);
+      var end = postContent.indexOf(" ", indexContent + keyword.length + 60);
 
-            var matchContent =
-              handlePostContent &&
-              "..." +
-                handlePostContent
-                  .substring(start, end)
-                  .replace(regEx, function (word) {
-                    return '<em class="search-keyword">' + word + "</em>";
-                  }) +
-                "...";
+      if (start === -1) start = 0;
+      if (end === -1 || end > postContent.length) end = postContent.length;
 
-            resultStr += matchContent;
-          }
-        });
+      var matchContent =
+        handlePostContent &&
+        handlePostContent.substring(start, end) + "...";
 
-        if (matchesScore > 0) {
-          var matchingPost = {
-            title: handlePostTitle,
-            content: postContent ? resultStr : "",
-            url: postUrl,
-            score: matchesScore,
-          };
+      resultStr += matchContent;
+    }
+  });
 
-          matchingResults.push(matchingPost);
-        }
-      }
+  if (matchesScore > 0) {
+    var matchingPost = {
+      title: handlePostTitle, // Now with highlighted keywords
+      content: postContent ? resultStr : "",
+      url: postUrl,
+      score: matchesScore,
+    };
+
+    matchingResults.push(matchingPost);
+  }
+}
+
     };
 
     for (var i = 0; i < data.length; i++) loop(i);
@@ -468,11 +461,12 @@
 
     var html = "";
     matchs.forEach(function (post) {
+      var cleanUrl = post.url.split('?')[0];
       html +=
       '<div class="matching-post">' +
       '<a href="' + post.url + '"><h2>' + post.title + '</h2></a>' +      
       "<p>" + post.content + "</p>" +
-      '<p><small><a href="' + post.url + '">' + post.url + '</a></small></p>' +
+      '<p><small><a href="' + post.url + '">' + cleanUrl + '</a></small></p>' +
       "</div>";
 
     });
