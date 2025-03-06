@@ -14,8 +14,14 @@ blockquote p mark {
 .sidebar h1.app-name {
   top: 0 !important;
 }
+.sidebar .logo {
+  height: 103px;
+}
 .sidebar .logo img {
   margin-right: 0 !important;
+  height:auto!important;
+  padding-left: calc(var(--unit)* 5);
+  padding-right: calc(var(--unit)* 5);
 }
 .page_toc {
   top: 0;
@@ -165,6 +171,7 @@ body.close .helpful-content {
   width: 100%;
   overflow: hidden;
   white-space: nowrap;
+  text-transform: capitalize;
 }
 .matching-post p small {
   color: #999;
